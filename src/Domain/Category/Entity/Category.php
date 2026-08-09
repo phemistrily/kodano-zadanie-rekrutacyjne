@@ -10,13 +10,26 @@ use App\Infrastructure\Doctrine\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
+#[ORM\Table(name: 'category')]
+#[UniqueEntity(
+    fields: ['code'],
+    message: 'Kategoria o kodzie "{{ value }}" już istnieje.',
+)]
 class Category implements TimestampableInterface
 {
     use HavingAutoIncrementedIdEntity;
     use TimestampableEntity;
-    #[ORM\Column(length: 10)]
+    #[ORM\Column(length: 10, unique: true)]
+    #[Assert\NotBlank(message: 'Kod kategorii jest wymagany.')]
+    #[Assert\Length(max: 10, maxMessage: 'Kod może mieć maksymalnie {{ limit }} znaków.')]
+    #[Assert\Regex(
+        pattern: '/^[A-Z0-9_-]+$/',
+        message: 'Kod może zawierać tylko wielkie litery, cyfry, podkreślenie i myślnik.',
+    )]
     private ?string $code = null;
 
     /**

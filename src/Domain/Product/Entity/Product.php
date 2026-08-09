@@ -11,23 +11,39 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
+#[ORM\Table(name: 'product')]
 class Product implements TimestampableInterface
 {
     use HavingAutoIncrementedIdEntity;
     use TimestampableEntity;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 255)]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'numeric', message: 'Cena musi być liczbą.')]
+    #[Assert\PositiveOrZero]
+    #[Assert\Regex(
+        pattern: '/^\d+(\.\d{1,2})?$/',
+        message: 'Cena może mieć maksymalnie dwa miejsca po przecinku.',
+    )]
     private ?string $price = null;
 
     /**
      * @var Collection<int, Category>
      */
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'products')]
+    #[ORM\JoinTable(name: 'product_category')]
+    #[Assert\Count(
+        min: 1,
+        minMessage: 'Produkt musi należeć do co najmniej jednej kategorii.',
+    )]
     private Collection $categories;
 
     public function __construct()
