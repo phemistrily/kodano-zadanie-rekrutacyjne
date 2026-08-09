@@ -1,0 +1,39 @@
+services:
+    app:
+        build: .
+        environment:
+            SERVER_NAME: ":80"
+            DATABASE_URL: "mysql://app:app@database:3306/app?serverVersion=8.4.0&charset=utf8mb4"
+            MAILER_DSN: "smtp://mailer:1025"
+        ports:
+            - "8080:80"
+        volumes:
+            - .:/app
+        depends_on:
+            database:
+                condition: service_healthy
+
+    database:
+        image: mysql:8.4
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: app
+            MYSQL_USER: app
+            MYSQL_PASSWORD: app
+        ports:
+            - "3307:3306"
+        volumes:
+            - db_data:/var/lib/mysql
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+            interval: 5s
+            timeout: 5s
+            retries: 20
+
+    mailer:
+        image: axllent/mailpit:latest
+        ports:
+            - "1025:1025"   # SMTP
+            - "8025:8025"   # UI w przeglądarce
+volumes:
+    db_data:
