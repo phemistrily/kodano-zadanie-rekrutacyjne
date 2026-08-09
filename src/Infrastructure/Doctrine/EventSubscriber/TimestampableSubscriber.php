@@ -1,8 +1,8 @@
 <?php
 
-namespace App\EventSubscriber;
+namespace App\Infrastructure\Doctrine\EventSubscriber;
 
-use App\Traits\TimestampableInterface;
+use App\Domain\Shared\Entity\Traits\TimestampableInterface;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;

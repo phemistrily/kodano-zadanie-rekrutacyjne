@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Entity;
+namespace App\Domain\Product\Entity;
 
-use App\Repository\ProductRepository;
-use App\Traits\HavingAutoIncrementedIdEntity;
-use App\Traits\TimestampableEntity;
-use App\Traits\TimestampableInterface;
+use App\Domain\Category\Entity\Category;
+use App\Domain\Shared\Entity\Traits\HavingAutoIncrementedIdEntity;
+use App\Domain\Shared\Entity\Traits\TimestampableEntity;
+use App\Domain\Shared\Entity\Traits\TimestampableInterface;
+use App\Infrastructure\Doctrine\Repository\ProductRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
