@@ -14,13 +14,11 @@ doctrine:
             Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
         auto_mapping: true
         mappings:
-            App:
+            Domain:
                 type: attribute
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Entity'
-                prefix: 'App\Entity'
-                alias: App
-
+                dir: '%kernel.project_dir%/src/Domain'
+                prefix: 'App\Domain'
 when@test:
     doctrine:
         dbal:
