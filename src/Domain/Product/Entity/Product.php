@@ -2,6 +2,7 @@
 
 namespace App\Domain\Product\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Domain\Category\Entity\Category;
 use App\Domain\Shared\Entity\Traits\HavingAutoIncrementedIdEntity;
@@ -46,14 +47,23 @@ class Product implements TimestampableInterface
     /**
      * @var Collection<int, Category>
      */
-    #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'products')]
+    #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'products', cascade: ['persist'])]
     #[ORM\JoinTable(name: 'product_category')]
     #[Assert\Count(
         min: 1,
         minMessage: 'Produkt musi należeć do co najmniej jednej kategorii.',
     )]
-    #[Groups(['product:read', 'product:write'])]
+    #[Assert\Valid]
+    #[Groups(['product:read'])]
     private Collection $categories;
+
+    #[ApiProperty(
+        readable: false,
+        writable: true,
+        schema: ['type' => 'array', 'items' => ['type' => 'string'], 'example' => ['ELEC']],
+    )]
+    #[Groups(['product:write'])]
+    private array $categoryCodes = [];
 
     public function __construct()
     {
@@ -80,6 +90,24 @@ class Product implements TimestampableInterface
     public function setPrice(?string $price): static
     {
         $this->price = $price;
+
+        return $this;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getCategoryCodes(): array
+    {
+        return $this->categoryCodes;
+    }
+
+    /**
+     * @param list<string> $categoryCodes
+     */
+    public function setCategoryCodes(array $categoryCodes): static
+    {
+        $this->categoryCodes = $categoryCodes;
 
         return $this;
     }
