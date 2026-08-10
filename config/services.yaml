@@ -14,10 +14,30 @@ services:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
+    _instanceof:
+        App\Domain\Notification\NotificationChannelInterface:
+            tags: ['app.notification_channel']
+
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
+        exclude:
+            - '../src/Kernel.php'
+            - '../src/Domain/'
+    App\Infrastructure\Notification\ChannelNotifier:
+        arguments:
+            $channels: !tagged_iterator app.notification_channel
+    App\Domain\Notification\NotifierInterface: '@App\Infrastructure\Notification\ChannelNotifier'
+    App\Infrastructure\Notification\Channel\EmailNotificationChannel:
+        arguments:
+            $from: '%env(NOTIFICATION_FROM)%'
+            $to: '%env(NOTIFICATION_TO)%'
+    App\Infrastructure\ApiPlatform\State\ProductNotificationProcessor:
+        decorates: 'api_platform.doctrine.orm.state.persist_processor'
+        arguments:
+            $inner: '@.inner'
+            $notifier: '@App\Domain\Notification\NotifierInterface'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
