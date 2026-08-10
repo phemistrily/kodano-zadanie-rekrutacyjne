@@ -4,13 +4,16 @@ namespace App\Domain\Shared\Entity\Traits;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 trait TimestampableEntity
 {
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[Groups(['timestamps:read'])]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[Groups(['timestamps:read'])]
     private \DateTimeImmutable $updatedAt;
 
     public function getCreatedAt(): \DateTimeImmutable

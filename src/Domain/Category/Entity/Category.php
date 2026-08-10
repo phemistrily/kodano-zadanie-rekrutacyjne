@@ -2,6 +2,7 @@
 
 namespace App\Domain\Category\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Domain\Product\Entity\Product;
 use App\Domain\Shared\Entity\Traits\HavingAutoIncrementedIdEntity;
 use App\Domain\Shared\Entity\Traits\TimestampableEntity;
@@ -11,10 +12,15 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 #[ORM\Table(name: 'category')]
+#[ApiResource(
+    normalizationContext: ['groups' => ['category:read', 'timestamps:read']],
+    denormalizationContext: ['groups' => ['category:write']],
+)]
 #[UniqueEntity(
     fields: ['code'],
     message: 'Kategoria o kodzie "{{ value }}" już istnieje.',
@@ -30,12 +36,13 @@ class Category implements TimestampableInterface
         pattern: '/^[A-Z0-9_-]+$/',
         message: 'Kod może zawierać tylko wielkie litery, cyfry, podkreślenie i myślnik.',
     )]
+    #[Groups(['category:read', 'category:write', 'product:read'])]
     private ?string $code = null;
 
     /**
      * @var Collection<int, Product>
      */
-    #[ORM\ManyToMany(targetEntity: Product::class, mappedBy: 'category')]
+    #[ORM\ManyToMany(targetEntity: Product::class, mappedBy: 'categories')]
     private Collection $products;
 
     public function __construct()

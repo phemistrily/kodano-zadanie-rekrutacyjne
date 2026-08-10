@@ -2,6 +2,7 @@
 
 namespace App\Domain\Product\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Domain\Category\Entity\Category;
 use App\Domain\Shared\Entity\Traits\HavingAutoIncrementedIdEntity;
 use App\Domain\Shared\Entity\Traits\TimestampableEntity;
@@ -11,10 +12,15 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 #[ORM\Table(name: 'product')]
+#[ApiResource(
+    normalizationContext: ['groups' => ['product:read', 'timestamps:read']],
+    denormalizationContext: ['groups' => ['product:write']],
+)]
 class Product implements TimestampableInterface
 {
     use HavingAutoIncrementedIdEntity;
@@ -23,9 +29,10 @@ class Product implements TimestampableInterface
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Length(min: 2, max: 255)]
+    #[Groups(['product:read', 'product:write'])]
     private ?string $name = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Assert\NotNull]
     #[Assert\Type(type: 'numeric', message: 'Cena musi być liczbą.')]
     #[Assert\PositiveOrZero]
@@ -33,6 +40,7 @@ class Product implements TimestampableInterface
         pattern: '/^\d+(\.\d{1,2})?$/',
         message: 'Cena może mieć maksymalnie dwa miejsca po przecinku.',
     )]
+    #[Groups(['product:read', 'product:write'])]
     private ?string $price = null;
 
     /**
@@ -44,6 +52,7 @@ class Product implements TimestampableInterface
         min: 1,
         minMessage: 'Produkt musi należeć do co najmniej jednej kategorii.',
     )]
+    #[Groups(['product:read', 'product:write'])]
     private Collection $categories;
 
     public function __construct()
