@@ -33,8 +33,8 @@ class Category implements TimestampableInterface
     #[Assert\NotBlank(message: 'Kod kategorii jest wymagany.')]
     #[Assert\Length(max: 10, maxMessage: 'Kod może mieć maksymalnie {{ limit }} znaków.')]
     #[Assert\Regex(
-        pattern: '/^[A-Z0-9_-]+$/',
-        message: 'Kod może zawierać tylko wielkie litery, cyfry, podkreślenie i myślnik.',
+        pattern: '/^[A-Za-z0-9_-]+$/',
+        message: 'Kod może zawierać tylko litery, cyfry, podkreślenie i myślnik.',
     )]
     #[Groups(['category:read', 'category:write', 'product:read'])]
     private ?string $code = null;
