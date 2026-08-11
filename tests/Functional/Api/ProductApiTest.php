@@ -9,7 +9,7 @@ final class ProductApiTest extends AbstractApiTestCase
 {
     public function testCreateWithNewCategoryCodeAutoCreatesCategory(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
         $response = $this->postProduct($client, ['name' => 'Konsola', 'price' => '1299.00', 'categoryCodes' => ['GAMING']]);
 
         self::assertResponseStatusCodeSame(201);
@@ -28,7 +28,7 @@ final class ProductApiTest extends AbstractApiTestCase
 
     public function testCreateWithMultipleCategoryCodes(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
         $data = $this->postProduct($client, [
             'name' => 'Zestaw',
             'price' => '10.00',
@@ -42,7 +42,7 @@ final class ProductApiTest extends AbstractApiTestCase
 
     public function testDuplicateCategoryCodesInOneRequestAreDeduplicated(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
         $data = $this->postProduct($client, ['name' => 'Produkt', 'price' => '10.00', 'categoryCodes' => ['ELEC', 'ELEC']])->toArray();
 
         self::assertResponseStatusCodeSame(201);
@@ -52,7 +52,7 @@ final class ProductApiTest extends AbstractApiTestCase
 
     public function testMixOfExistingAndNewCategoryCodes(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
         $client->request('POST', '/api/categories', ['json' => ['code' => 'ELEC'], 'headers' => ['accept' => 'application/json']]);
 
         $data = $this->postProduct($client, ['name' => 'Produkt', 'price' => '10.00', 'categoryCodes' => ['ELEC', 'NEW']])->toArray();
@@ -64,7 +64,7 @@ final class ProductApiTest extends AbstractApiTestCase
 
     public function testExistingCategoryIsReusedNotDuplicated(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
         $this->postProduct($client, ['name' => 'Produkt A', 'price' => '10.00', 'categoryCodes' => ['ELEC']]);
         self::assertResponseStatusCodeSame(201);
         $this->postProduct($client, ['name' => 'Produkt B', 'price' => '20.00', 'categoryCodes' => ['ELEC']]);
@@ -75,42 +75,42 @@ final class ProductApiTest extends AbstractApiTestCase
 
     public function testCategoriesFieldIsReadOnlyOnWrite(): void
     {
-        $this->postProduct(static::createClient(), ['name' => 'Produkt X', 'price' => '10.00', 'categories' => ['/api/categories/1']]);
+        $this->postProduct($this->authClient(), ['name' => 'Produkt X', 'price' => '10.00', 'categories' => ['/api/categories/1']]);
 
         self::assertResponseStatusCodeSame(422);
     }
 
     public function testProductWithoutCategoriesIsRejected(): void
     {
-        $this->postProduct(static::createClient(), ['name' => 'Produkt X', 'price' => '10.00', 'categoryCodes' => []]);
+        $this->postProduct($this->authClient(), ['name' => 'Produkt X', 'price' => '10.00', 'categoryCodes' => []]);
 
         self::assertResponseStatusCodeSame(422);
     }
 
     public function testProductWithoutNameIsRejected(): void
     {
-        $this->postProduct(static::createClient(), ['price' => '10.00', 'categoryCodes' => ['ELEC']]);
+        $this->postProduct($this->authClient(), ['price' => '10.00', 'categoryCodes' => ['ELEC']]);
 
         self::assertResponseStatusCodeSame(422);
     }
 
     public function testNonNumericPriceIsRejected(): void
     {
-        $this->postProduct(static::createClient(), ['name' => 'Produkt X', 'price' => 'abc', 'categoryCodes' => ['ELEC']]);
+        $this->postProduct($this->authClient(), ['name' => 'Produkt X', 'price' => 'abc', 'categoryCodes' => ['ELEC']]);
 
         self::assertResponseStatusCodeSame(422);
     }
 
     public function testNegativePriceIsRejected(): void
     {
-        $this->postProduct(static::createClient(), ['name' => 'Produkt X', 'price' => '-5.00', 'categoryCodes' => ['ELEC']]);
+        $this->postProduct($this->authClient(), ['name' => 'Produkt X', 'price' => '-5.00', 'categoryCodes' => ['ELEC']]);
 
         self::assertResponseStatusCodeSame(422);
     }
 
     public function testInvalidCategoryCodeIsRejectedAndCreatesNoCategory(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
         $this->postProduct($client, ['name' => 'Produkt X', 'price' => '10.00', 'categoryCodes' => ['bad code']]);
         self::assertResponseStatusCodeSame(422);
 
@@ -119,14 +119,14 @@ final class ProductApiTest extends AbstractApiTestCase
 
     public function testGetUnknownProductReturns404(): void
     {
-        static::createClient()->request('GET', '/api/products/999999', ['headers' => ['accept' => 'application/json']]);
+        $this->authClient()->request('GET', '/api/products/999999', ['headers' => ['accept' => 'application/json']]);
 
         self::assertResponseStatusCodeSame(404);
     }
 
     public function testUpdatePriceViaPatch(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
         $id = $this->postProduct($client, ['name' => 'Produkt A', 'price' => '10.00', 'categoryCodes' => ['ELEC']])->toArray()['id'];
 
         $response = $client->request('PATCH', '/api/products/'.$id, [
@@ -140,7 +140,7 @@ final class ProductApiTest extends AbstractApiTestCase
 
     public function testPatchOnlyNameKeepsPriceAndCategories(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
         $id = $this->postProduct($client, ['name' => 'Stara nazwa', 'price' => '10.00', 'categoryCodes' => ['ELEC']])->toArray()['id'];
 
         $data = $client->request('PATCH', '/api/products/'.$id, [
@@ -157,7 +157,7 @@ final class ProductApiTest extends AbstractApiTestCase
 
     public function testPatchCategoryCodesReplacesCategories(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
         $id = $this->postProduct($client, ['name' => 'Produkt A', 'price' => '10.00', 'categoryCodes' => ['AAA']])->toArray()['id'];
 
         $response = $client->request('PATCH', '/api/products/'.$id, [
@@ -172,7 +172,7 @@ final class ProductApiTest extends AbstractApiTestCase
 
     public function testDeleteProduct(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
         $id = $this->postProduct($client, ['name' => 'Produkt A', 'price' => '10.00', 'categoryCodes' => ['ELEC']])->toArray()['id'];
 
         $client->request('DELETE', '/api/products/'.$id, ['headers' => ['accept' => 'application/json']]);
@@ -184,7 +184,7 @@ final class ProductApiTest extends AbstractApiTestCase
 
     public function testCreatingProductSendsNotificationEmail(): void
     {
-        $this->postProduct(static::createClient(), ['name' => 'Laptop', 'price' => '10.00', 'categoryCodes' => ['ELEC']]);
+        $this->postProduct($this->authClient(), ['name' => 'Laptop', 'price' => '10.00', 'categoryCodes' => ['ELEC']]);
 
         self::assertResponseStatusCodeSame(201);
         self::assertEmailCount(1);

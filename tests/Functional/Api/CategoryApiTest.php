@@ -9,7 +9,7 @@ final class CategoryApiTest extends AbstractApiTestCase
 {
     public function testCreateReturnsCleanJsonWithAllFields(): void
     {
-        $response = $this->postCategory(static::createClient(), 'ELEC');
+        $response = $this->postCategory($this->authClient(), 'ELEC');
 
         self::assertResponseStatusCodeSame(201);
         $data = $response->toArray();
@@ -22,7 +22,7 @@ final class CategoryApiTest extends AbstractApiTestCase
 
     public function testDuplicateCodeIsRejected(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
         $this->postCategory($client, 'ELEC');
         $this->postCategory($client, 'ELEC');
 
@@ -31,14 +31,14 @@ final class CategoryApiTest extends AbstractApiTestCase
 
     public function testCodeLongerThan10CharsIsRejected(): void
     {
-        $this->postCategory(static::createClient(), 'ABCDEFGHIJK'); // 11 chars
+        $this->postCategory($this->authClient(), 'ABCDEFGHIJK'); // 11 chars
 
         self::assertResponseStatusCodeSame(422);
     }
 
     public function testCodeWithExactly10CharsIsAccepted(): void
     {
-        $response = $this->postCategory(static::createClient(), 'ABCDEFGHIJ'); // 10 chars
+        $response = $this->postCategory($this->authClient(), 'ABCDEFGHIJ'); // 10 chars
 
         self::assertResponseStatusCodeSame(201);
         self::assertSame('ABCDEFGHIJ', $response->toArray()['code']);
@@ -46,7 +46,7 @@ final class CategoryApiTest extends AbstractApiTestCase
 
     public function testLowercaseCodeIsNowAllowed(): void
     {
-        $response = $this->postCategory(static::createClient(), 'elec');
+        $response = $this->postCategory($this->authClient(), 'elec');
 
         self::assertResponseStatusCodeSame(201);
         self::assertSame('elec', $response->toArray()['code']);
@@ -54,28 +54,28 @@ final class CategoryApiTest extends AbstractApiTestCase
 
     public function testCodeWithInvalidCharactersIsRejected(): void
     {
-        $this->postCategory(static::createClient(), 'bad code'); // space is not allowed
+        $this->postCategory($this->authClient(), 'bad code'); // space is not allowed
 
         self::assertResponseStatusCodeSame(422);
     }
 
     public function testBlankCodeIsRejected(): void
     {
-        $this->postCategory(static::createClient(), '');
+        $this->postCategory($this->authClient(), '');
 
         self::assertResponseStatusCodeSame(422);
     }
 
     public function testGetUnknownCategoryReturns404(): void
     {
-        static::createClient()->request('GET', '/api/categories/999999', ['headers' => ['accept' => 'application/json']]);
+        $this->authClient()->request('GET', '/api/categories/999999', ['headers' => ['accept' => 'application/json']]);
 
         self::assertResponseStatusCodeSame(404);
     }
 
     public function testUpdateCodeViaPatch(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
         $id = $this->postCategory($client, 'ELEC')->toArray()['id'];
 
         $response = $client->request('PATCH', '/api/categories/'.$id, [
@@ -89,7 +89,7 @@ final class CategoryApiTest extends AbstractApiTestCase
 
     public function testPatchToAnAlreadyUsedCodeIsRejected(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
         $this->postCategory($client, 'ELEC');
         $homeId = $this->postCategory($client, 'HOME')->toArray()['id'];
 
@@ -103,7 +103,7 @@ final class CategoryApiTest extends AbstractApiTestCase
 
     public function testDeleteCategory(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
         $id = $this->postCategory($client, 'ELEC')->toArray()['id'];
 
         $client->request('DELETE', '/api/categories/'.$id, ['headers' => ['accept' => 'application/json']]);

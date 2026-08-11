@@ -38,6 +38,10 @@ services:
         arguments:
             $inner: '@.inner'
             $notifier: '@App\Domain\Notification\NotifierInterface'
+    App\Infrastructure\ApiPlatform\OpenApi\JwtSecurityOpenApiFactory:
+        decorates: 'api_platform.openapi.factory'
+        arguments:
+            $decorated: '@.inner'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
