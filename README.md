@@ -42,6 +42,7 @@ make up          # build and start containers (app + database + mailer)
 make install     # composer install inside the container (if vendor/ is missing)
 make jwt-keys    # generate the JWT keypair (config/jwt/*.pem)
 make migrate     # run migrations (creates the schema + a demo user)
+make fixtures    # (optional) load sample data — users, categories, products
 ```
 
 - API: `http://localhost:8080/api`
@@ -49,6 +50,16 @@ make migrate     # run migrations (creates the schema + a demo user)
 - Mailpit (e-mail preview): `http://localhost:8025`
 
 Useful shortcuts: `make down`, `make sh`, `make logs`, `make console <command>`.
+
+### Fixtures (sample data)
+
+`make fixtures` (`doctrine:fixtures:load`) **purges** the database and loads a fresh sample set
+(`src/DataFixtures/`): 5 categories, 8 products linked to them, and two users:
+
+| E-mail | Password | Roles |
+|---|---|---|
+| `admin@example.com` | `admin1234` | `ROLE_ADMIN` |
+| `user@example.com` | `user1234` | `ROLE_USER` |
 
 ## Entities
 

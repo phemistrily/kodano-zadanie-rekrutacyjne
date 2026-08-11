@@ -10,6 +10,8 @@ install:
 	docker compose exec app composer install
 migrate:
 	docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+fixtures:
+	docker compose exec app php bin/console doctrine:fixtures:load --no-interaction
 jwt-keys:
 	docker compose exec -T app php bin/console lexik:jwt:generate-keypair --skip-if-exists
 logs:
